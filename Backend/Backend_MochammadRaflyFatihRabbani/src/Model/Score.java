@@ -1,7 +1,9 @@
+package Model;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class Score {
+public class Score implements ShowDetail{
     private UUID scoreID;
     private UUID playerID;
     private Player player;
@@ -15,7 +17,8 @@ public class Score {
         this.value = value;
         this.coinsCollected = coinsCollected;
         this.distance = distance;
-
+        this.scoreID = UUID.randomUUID();
+        this.createdAt = LocalDateTime.now();
     }
     public int getValue(){
         return value;
@@ -30,11 +33,11 @@ public class Score {
     }
 
     public void showDetail(){
-        System.out.println("Score ID : " + scoreID
-                + "playerID : " + playerID
-                + "High Score: " + getValue()
-                + "Coins Collected: " + getCoinsCollected()
-                + "Distance: " + getDistance()
-                + "Created At: " + createdAt);
+        System.out.println("Model.Score ID : " + scoreID + "\n"
+                + "playerID : " + playerID + "\n"
+                + "High Model.Score: " + getValue() + "\n"
+                + "Coins Collected: " + getCoinsCollected() + "\n"
+                + "Distance: " + getDistance() + "\n"
+                + "Created At: " + createdAt + "\n" );
     }
 }
