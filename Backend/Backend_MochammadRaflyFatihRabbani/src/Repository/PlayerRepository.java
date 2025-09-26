@@ -1,32 +1,61 @@
 package Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class PlayerRepository <Player, UUID>{
+import Model.Player;
 
-    public void findByUsername(String username){
+public class PlayerRepository extends BaseRepository <Player, UUID>{
+
+    @Override
+    public void save(Player player) {
+        UUID id = getId(player);
+        dataMap.put(id, player);
+        dataList.add(player);
+    }
+
+    @Override
+    public UUID getId(Player entity) {
+        return entity.getPlayerID();
+    }
+
+
+    public Optional<Player> findByUsername(String username){
+        return dataList.stream()
+                .filter(player -> player.getUsername()
+                        .equals(username)).findFirst();
+    }
+
+    public List<Player> findTopPlayersByHighScore(int limit){
+        return dataList.stream()
+                .sorted((p1, p2) -> Integer.compare(p2.getHighScore(), p1.getHighScore()))
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    public List<Player> findByHighscoreGreaterThan(int minScore){
+        return dataList.stream()
+                .filter(player -> player.getHighScore() > minScore)
+                .collect(Collectors.toList());
 
     }
 
-    public void findTopPlayersByHighScore(int limit){
-
+    public List<Player> findAllByOrderByTotalCoinsDesc(){
+        return dataList.stream()
+                .sorted((p1, p2) -> Integer.compare(p2.getTotalCoins(), p1.getTotalCoins()))
+                .collect(Collectors.toList());
     }
 
-    public void findByHighscoreGreaterThan(int minScore){
-
+    public List<Player> findAllByOrderByTotalDistanceTravelledDesc(){
+        return dataList.stream()
+                .sorted((p1, p2) -> Integer.compare(p2.getTotalDistance(), p1.getTotalDistance()))
+                .collect(Collectors.toList());
     }
 
-    public void findAllByOrderByTotalCoinsDesc(){
-
+    public boolean existByUsername(String username) {
+        return dataList.stream()
+                .anyMatch(player -> player.getUsername().equals(username));
     }
-
-    public void findAllByOrderByTotalDistanceTravelledDesc(){}
-
-
-
-
-
-
 
 
 }

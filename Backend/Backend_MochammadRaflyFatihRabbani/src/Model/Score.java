@@ -24,6 +24,10 @@ public class Score implements ShowDetail{
         return value;
     }
 
+    public Object getPlayerId() { return playerID; }
+
+    public UUID getScoreId() { return scoreID; }
+
     public int getCoinsCollected() {
         return coinsCollected;
     }
@@ -31,6 +35,8 @@ public class Score implements ShowDetail{
     public int getDistance(){
         return distance;
     }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
     public void showDetail(){
         System.out.println("Model.Score ID : " + scoreID + "\n"

@@ -24,6 +24,22 @@ public class Player implements ShowDetail{
         return playerID;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public int getHighScore() {
+        return highscore;
+    }
+
+    public int getTotalCoins() {
+        return totalCoins;
+    }
+
+    public int getTotalDistance() {
+        return totalDistance;
+    }
+
     public void updateHighScore(int newScore){
         if(newScore >= highscore){
             highscore = newScore;
@@ -33,6 +49,8 @@ public class Player implements ShowDetail{
     public void addCoins(int coins){
         totalCoins += coins;
     }
+
+
 
     public void addDistance(int distance){
         totalDistance += distance;
