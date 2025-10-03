@@ -16,8 +16,13 @@ public class PlayerService {
         return playerRepository.existByUsername(username);
     }
 
-    public void createPlayer(Player player){
+    public Player createPlayer(Player player){
+        if (existByUsername(player.getUsername())) {
+            throw new RuntimeException("Username already exists: " + player.getUsername());
+        }
+
         playerRepository.save(player);
+        return player;
     }
 
     public Optional<Player> getPlayerById(UUID playerId){
@@ -33,11 +38,23 @@ public class PlayerService {
     }
 
     public Player updatePlayerStats(UUID playerId, int scoreValue, int coinsCollected, int distanceTravelled) {
+        Player player = playerRepository.findById(playerId)
+                .orElseThrow(() -> new RuntimeException("Player not found with ID: " + playerId));
 
+        // Update high score if this score is higher
+        player.updateHighScore(scoreValue);
+
+        // Add coins and distance to totals
+        player.addCoins(coinsCollected);
+        player.addDistance(distanceTravelled);
+
+        playerRepository.save(player);
+        return player;
     }
 
-    public void getAllPlayers(){
 
+    public List<Player> getAllPlayers() {
+        return playerRepository.findAll();
     }
 
     public void updatePlayer(UUID playerId, Player updatedPlayer){
@@ -48,8 +65,6 @@ public class PlayerService {
         if(existByUsername(updatedPlayer.getUsername())){
             throw new RuntimeException("Player already exists");
         }
-
-        //Optional<Player>
     }
 
     public List<Player> getLeaderboardByHighScore(int limit){
