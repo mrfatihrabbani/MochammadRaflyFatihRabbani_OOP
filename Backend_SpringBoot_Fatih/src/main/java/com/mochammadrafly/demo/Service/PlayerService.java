@@ -1,11 +1,12 @@
-package com.mochammadrafly.demo;
-import java.util.*;
+package com.mochammadrafly.demo.Service;
 import com.mochammadrafly.demo.Model.Player;
 import com.mochammadrafly.demo.Repository.PlayerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class PlayerService {
@@ -44,7 +45,8 @@ public class PlayerService {
         if (updatedPlayer.getUsername() != null &&
                 !updatedPlayer.getUsername().equals(existingPlayer.getUsername())) {
 
-            if (existsByUsername(updatedPlayer.getUsername())) {
+            if (!existingPlayer.getUsername().equals(updatedPlayer.getUsername())
+                    && playerRepository.existsByUsername(updatedPlayer.getUsername())) {
                 throw new RuntimeException("Username already exists: " + updatedPlayer.getUsername());
             }
             existingPlayer.setUsername(updatedPlayer.getUsername());
@@ -62,8 +64,7 @@ public class PlayerService {
             existingPlayer.setTotalDistance(updatedPlayer.getTotalDistance());
         }
 
-        playerRepository.save(existingPlayer);
-        return existingPlayer;
+        return playerRepository.save(existingPlayer);
     }
 
     public void deletePlayer(UUID playerId) {
@@ -90,12 +91,11 @@ public class PlayerService {
         player.addCoins(coinsCollected);
         player.addDistance(distanceTravelled);
 
-        playerRepository.save(player);
-        return player;
+        return playerRepository.save(player);
     }
 
     public List<Player> getLeaderboardByHighScore(int limit) {
-        return playerRepository.findTopPlayersByHighScore(limit);
+        return playerRepository.findTOpPlayersByHighScore(limit);
     }
     public List<Player> getLeaderboardByTotalCoins() {
         return playerRepository.findAllByOrderByTotalCoinsDesc();
@@ -103,7 +103,7 @@ public class PlayerService {
 
 
     public List<Player> getLeaderboardByTotalDistance() {
-        return playerRepository.findAllByOrderByTotalDistanceTravelledDesc();
+        return playerRepository.findAllByOrderByTotalDistanceDesc();
     }
 
 
