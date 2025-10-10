@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.List;
 import java.util.Optional;
 
-
+@Service
 public class ScoreService {
     @Autowired
     private ScoreRepository scoreRepository;
@@ -64,7 +64,7 @@ public class ScoreService {
         List<Score> list = scoreRepository.findHighestScoreByPlayerId(playerId);
         if(list.isEmpty()) {
             return Optional.empty();
-        } else return Optional.of();
+        } else return Optional.of(list.get(0));
 
     }
 
@@ -94,10 +94,33 @@ public class ScoreService {
         }
     }
 
-    public Score updatedScore(UUID scoreId){
-        scoreRepository.findById(scoreId)
-                .orElseThrow(() -> new RuntimeException("Score is not found"));
-        
+    public Score updatedScore(UUID scoreId, Score updatedScore){
+        Score existingScore = scoreRepository.findById(scoreId)
+                .orElseThrow(() -> new RuntimeException("Score is not found " + scoreId));
+        if (updatedScore.getValue() != null) {
+            existingScore.setValue(updatedScore.getValue());
+        }
+        if (updatedScore.getCoinsCollected() != null) {
+            existingScore.setCoinsCollected(updatedScore.getCoinsCollected());
+        }
+        if (updatedScore.getDistanceTravelled() != null) {
+            existingScore.setDistanceTravelled(updatedScore.getDistanceTravelled());
+        }
+
+        return scoreRepository.save(existingScore);
+    }
+
+    public void deleteScore(UUID scoreId){
+        if(!scoreRepository.existsById(scoreId)){
+            throw new RuntimeException("Score not found for Score ID " + scoreId);
+        }
+        scoreRepository.deleteById(scoreId);
+    }
+
+    public void deleteScoresByPlayerId(UUID playerId){
+        List<Score> playerScores = scoreRepository.findByPlayerId(playerId);
+
+        scoreRepository.deleteAll(playerScores);
     }
 
 

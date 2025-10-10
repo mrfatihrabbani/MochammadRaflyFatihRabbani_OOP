@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 @Repository
 public interface ScoreRepository extends JpaRepository<Score, UUID> {
-    // ISI Kodenya disini
     List<Score> findByPlayerId(UUID playerId);
     List<Score> findByPlayerIdOrderByValueDesc(UUID playerId);
     List<Score> findByValueGreaterThan(int minValue);

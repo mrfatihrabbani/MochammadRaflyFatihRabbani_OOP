@@ -1,4 +1,4 @@
-package com.mochammadrafly.demo;
+package com.mochammadrafly.demo.Controller;
 
 import com.mochammadrafly.demo.Model.Player;
 import com.mochammadrafly.demo.Service.PlayerService;
@@ -15,11 +15,23 @@ import java.util.Optional;
 @RequestMapping("/api/players")
 
 public class PlayerController {
+
     @Autowired
     private PlayerService playerService;
 
+    @PostMapping
+    public ResponseEntity<?> createPlayer(@RequestBody Player player) {
+        try {
+            Player createdPlayer = playerService.createPlayer(player);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdPlayer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("{\"error\": \"" + e.getMessage() + "\"}");
+        }
+    }
+
     @GetMapping
-    public ResponseEntity<List<Player>> getAllPlayers(){
+    public ResponseEntity<List<Player>> getAllPlayers() {
         List<Player> players = playerService.getAllPlayers();
         return ResponseEntity.ok(players);
     }
@@ -119,5 +131,4 @@ public class PlayerController {
         List<Player> leaderboard = playerService.getLeaderboardByTotalDistance();
         return ResponseEntity.ok(leaderboard);
     }
-
 }
