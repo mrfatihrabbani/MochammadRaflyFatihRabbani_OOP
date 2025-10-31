@@ -65,7 +65,6 @@ public class ScoreService {
         if(list.isEmpty()) {
             return Optional.empty();
         } else return Optional.of(list.get(0));
-
     }
 
     public List<Score> getScoresAboveValue(int minValue) {
