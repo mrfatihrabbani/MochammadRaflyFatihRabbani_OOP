@@ -9,18 +9,22 @@ public class VerticalLaser extends BaseObstacle{
         super(startPosition, length);
     }
 
+    public void initialize(Vector2 startPosition, int length){
+        super.initialize(startPosition,length);
+    }
+
     @Override
     public void updateCollider() {
-
+        collider = new Rectangle(position.x, position.y, WIDTH, length);
     }
 
     @Override
     public void drawShape(ShapeRenderer shapeRenderer) {
-
+        shapeRenderer.rect(position.x, position.y, WIDTH, length);
     }
 
     @Override
-    public float getRenderWidth(float width, float height) {
+    public float getRenderWidth() {
         return WIDTH;
     }
 }

@@ -17,10 +17,20 @@ public abstract class BaseObstacle {
         updateCollider();
     }
 
-    void render(ShapeRenderer shapeRenderer){
-        if(!active){
-            //collide with player
+    public void initialize(Vector2 startPosition, int length){
+        position.set(startPosition);
+        this.length = length;
+        updateCollider();
+    }
+
+    public void render(ShapeRenderer shapeRenderer){
+        if(active){
+            drawShape(shapeRenderer);
         }
+    }
+
+    public boolean isColliding(Rectangle playerCollider){
+        return active && collider.overlaps(playerCollider);
     }
 
     public boolean isActive() {
@@ -28,20 +38,21 @@ public abstract class BaseObstacle {
     }
 
     public boolean isOffScreenCamera(float cameraLeftEdge){
-        //skipped
+        return (position.x + getRenderWidth()) < cameraLeftEdge;
     }
 
     public abstract void updateCollider();
     public abstract void drawShape(ShapeRenderer shapeRenderer);
 
-    public abstract float getRenderWidth(float width, float height);
+    public abstract float getRenderWidth();
 
     public void setActive(boolean active){
-
+        this.active = active;
     }
 
     public void setPosition(float x, float y){
-        collider.setPosition(x,y);
+        position.set(x,y);
+        updateCollider();
     }
 
     public Vector2 getPosition(){

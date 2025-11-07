@@ -3,10 +3,15 @@ package com.fatih.frontend;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.fatih.frontend.factories.ObstacleFactory;
+import com.fatih.frontend.obstacles.BaseObstacle;
+import com.fatih.frontend.obstacles.HomingMissile;
 
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
@@ -16,22 +21,36 @@ public class Main extends ApplicationAdapter {
     private Ground ground;
     private GameManager gameManager;
 
+    private ObstacleFactory obstacleFactory;
+    private float obstacleSpawnTimer;
+    private float lastObstacleSpawnX = 0f;
+    private static final float OBSTACLE_SPAWN_INTERVAL = 2.5f;
+    private static final float OBSTACLE_DENSITY = 1;
+    private static final float SPAWN_AHEAD_DISTANCE = 300f;
+    private static final float MIN_OBSTACLE_GAP = 200f;
+    private static final float OBSTACLE_CLUSTER_SPACING = 250f;
+
+
     private OrthographicCamera camera;
     private float cameraOffset = 0.2f;
+    private int screenWidth;
+    private int screenHeight;
+    private int lastLoggedScore;
 
     @Override
     public void create() {
         shapeRenderer = new ShapeRenderer();
-
-        gameManager = GameManager.getInstance();
-
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
-        camera.setToOrtho(false);
-
-        player = new Player(new Vector2(100, Gdx.graphics.getHeight() / 2f));
-
+        this.gameManager = GameManager.getInstance();
+        screenWidth = Gdx.graphics.getWidth();
+        screenHeight = Gdx.graphics.getHeight();
+        // Initialize camera
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, screenWidth, screenHeight);
+        player = new Player(new Vector2(100, screenHeight / 2f));
         ground = new Ground();
+
+        obstacleFactory = new ObstacleFactory();
+        obstacleSpawnTimer = 0f;
 
         gameManager.startGame();
     }
@@ -42,51 +61,125 @@ public class Main extends ApplicationAdapter {
         float delta = Gdx.graphics.getDeltaTime();
 
         update(delta);
-
-        ScreenUtils.clear(0.6f, 0.6f, 0.7f, 1f);
-
-        shapeRenderer.setProjectionMatrix(camera.combined);
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        ground.renderShape(shapeRenderer);
-
-        player.renderShape(shapeRenderer);
-
-        shapeRenderer.end();
+        renderGame(shapeRenderer);
     }
 
     private void update(float delta) {
         boolean isFlying = Gdx.input.isKeyPressed(Input.Keys.SPACE);
 
-        updateCamera(delta);
+        if(player.isDead() && isFlying){
+            resetGame();
+            return;
+        }
 
         player.update(delta, isFlying);
-
+        updateCamera(delta);
         ground.update(camera.position.x);
+        player.checkBoundaries(ground, screenHeight);
 
-        player.checkBoundaries(ground, Gdx.graphics.getHeight());
+        updateObstacles(delta);
+        checkCollisions();
 
-        int tempScore = (int) player.getDistanceTraveled();
-
-        if (tempScore != gameManager.getScore()){
-            gameManager.setScore(tempScore);
+        int currentScoreMeters = (int)player.getDistanceTraveled();
+        int previousScoreMeters = gameManager.getScore();
+        if (currentScoreMeters > previousScoreMeters) {
+            if (currentScoreMeters != lastLoggedScore) {
+                System.out.println("Distance: " + currentScoreMeters +
+                    "m");
+                lastLoggedScore = currentScoreMeters;
+            }
+            gameManager.setScore(currentScoreMeters);
         }
     }
 
+    private void renderGame(ShapeRenderer shapeRenderer){
+        ScreenUtils.clear(0.2f,0.2f,0.2f,0.2f);
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        ground.renderShape(shapeRenderer);
+        player.renderShape(shapeRenderer);
+        shapeRenderer.setColor(Color.RED);
+        for(BaseObstacle obstacle : obstacleFactory.getAllInUseObstacles()){
+            obstacle.render(shapeRenderer);
+        }
+
+        shapeRenderer.end();
+    }
+
     private void updateCamera(float delta) {
-        float cameraFocus = player.getPosition().x + player.getWidth() * cameraOffset;
-
+        float cameraFocus = player.getPosition().x + screenWidth * cameraOffset;
         camera.position.x = cameraFocus;
-
         camera.update();
     }
 
+    private void updateObstacles(float delta){
+        obstacleSpawnTimer += delta;
+        if(obstacleSpawnTimer >= OBSTACLE_SPAWN_INTERVAL){
+            spawnObstacle();
+            obstacleSpawnTimer = 0f;
+        }
+
+        float cameraLeftEdgePos = camera.position.x - (screenWidth / 2f);
+        for(BaseObstacle obstacle : obstacleFactory.getAllInUseObstacles()){
+            if(obstacle instanceof HomingMissile){
+                ((HomingMissile) obstacle).setTarget(player);
+                ((HomingMissile) obstacle).update(delta);
+            }
+
+            if(obstacle.isOffScreenCamera(cameraLeftEdgePos)){
+                obstacleFactory.releaseObstacle(obstacle);
+            }
+        }
+    }
+
+    private void spawnObstacle(){
+        float cameraRightEdgePos = camera.position.x + (screenWidth / 2f);
+
+        float spawnAheadOfCamera = cameraRightEdgePos + SPAWN_AHEAD_DISTANCE;
+
+        float spawnAfterLastObstacle = lastObstacleSpawnX + MIN_OBSTACLE_GAP;
+
+        float baseSpawnX = Math.max(spawnAheadOfCamera, spawnAfterLastObstacle);
+
+        for(int i = 0; i < OBSTACLE_DENSITY; i++){
+            float currentSpawnX = baseSpawnX + (i * OBSTACLE_CLUSTER_SPACING);
+
+            obstacleFactory.createRandomObstacle(ground.getTopY(), currentSpawnX, player.getHeight());
+            lastObstacleSpawnX = currentSpawnX;
+
+        }
+
+    }
+
+    private void checkCollisions(){
+        Rectangle playerCollider = player.getCollider();
+        for(BaseObstacle obstacle : obstacleFactory.getAllInUseObstacles()){
+            if(obstacle.isColliding(playerCollider)){
+                System.out.println("GAME OVER, please press any keys to restart");
+                player.die();
+                return;
+            }
+        }
+    }
+
+    private void resetGame(){
+        player.reset();
+        obstacleFactory.releaseAllObstacles();
+        obstacleSpawnTimer = 0f;
+        lastObstacleSpawnX = 0f;
+
+        camera.position.x = player.getPosition().x + screenWidth * cameraOffset;
+        gameManager.setScore(0);
+        lastLoggedScore = -1;
+
+        System.out.println("Game reset!");
+    }
 
 
     @Override
     public void dispose() {
         shapeRenderer.dispose();
+        obstacleFactory.releaseAllObstacles();
     }
 
 }

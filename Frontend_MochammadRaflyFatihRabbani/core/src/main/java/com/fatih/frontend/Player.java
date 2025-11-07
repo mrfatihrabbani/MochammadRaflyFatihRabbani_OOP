@@ -23,20 +23,26 @@ public class Player {
     private float baseSpeed = 300f;
     private float distanceTraveled = 0f;
 
+    private boolean isDead = false;
+    private Vector2 startPosition;
+
     public Player(Vector2 startPosition){
         position = new Vector2(startPosition);
         velocity = new Vector2(0, 0);
         collider = new Rectangle(position.x, position.y, width, height);
+        this.startPosition = new Vector2(startPosition);
     }
 
     public void update(float delta, boolean isFlying){
-        updateDistanceAndSpeed(delta);
-        updatePosition(delta);
-        applyGravity(delta);
-        if(isFlying){
-            fly(delta);
+        if(!isDead){
+            updateDistanceAndSpeed(delta);
+            updatePosition(delta);
+            applyGravity(delta);
+            if(isFlying){
+                fly(delta);
+            }
+            updateCollider();
         }
-        updateCollider();
     }
 
     private void updateDistanceAndSpeed(float delta){
@@ -98,6 +104,22 @@ public class Player {
 
     public float getDistanceTraveled() {
         return distanceTraveled / 10f;
+    }
+
+    public void die(){
+        this.isDead = true;
+        this.velocity.set(0,0);
+    }
+
+    public void reset(){
+        this.isDead = false;
+        this.position.set(startPosition);
+        this.velocity.set(0,0);
+        this.distanceTraveled = 0f;
+    }
+
+    public boolean isDead(){
+        return isDead;
     }
 
 }

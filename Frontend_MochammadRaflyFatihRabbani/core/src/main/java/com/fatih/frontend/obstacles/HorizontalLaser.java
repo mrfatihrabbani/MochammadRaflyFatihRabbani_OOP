@@ -5,11 +5,13 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public class HorizontalLaser extends BaseObstacle{
-    private Vector2 startPosition;
-    private int length;
 
     public HorizontalLaser(Vector2 startPosition, float length) {
         super(startPosition, length);
+    }
+
+    public void initialize(Vector2 startPosition, int length){
+        super.initialize(startPosition,length);
     }
 
     @Override
@@ -23,7 +25,7 @@ public class HorizontalLaser extends BaseObstacle{
     }
 
     @Override
-    public float getRenderWidth(float width, float height) {
+    public float getRenderWidth() {
         return length;
     }
 }
