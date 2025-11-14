@@ -20,9 +20,7 @@ public class HomingMissileCreator implements ObstacleFactory.ObstacleCreator {
 
         Vector2 position = new Vector2(spawnX, randomY);
 
-        pool.obtain().initialize(position, 1);
-        pool.obtain().setActive(true);
-        return pool.obtain();
+        return pool.obtain(position);
     }
 
     @Override

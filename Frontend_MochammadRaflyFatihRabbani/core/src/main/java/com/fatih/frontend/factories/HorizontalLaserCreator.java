@@ -26,9 +26,8 @@ public class HorizontalLaserCreator implements ObstacleFactory.ObstacleCreator {
 
         Vector2 position = new Vector2(spawnX, randomY);
 
-        pool.obtain().initialize(position, (int)size);
-        pool.obtain().setActive(true);
-        return pool.obtain();
+        return pool.obtain(position, (int)size);
+
     }
 
     @Override

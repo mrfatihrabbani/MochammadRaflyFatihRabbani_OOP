@@ -22,9 +22,7 @@ public class VerticalLaserCreator implements ObstacleFactory.ObstacleCreator {
 
         Vector2 position = new Vector2(spawnX, groundTopY);
 
-        pool.obtain().initialize(position, (int)size);
-        pool.obtain().setActive(true);
-        return pool.obtain();
+        return pool.obtain(position, (int)size);
     }
 
     @Override
