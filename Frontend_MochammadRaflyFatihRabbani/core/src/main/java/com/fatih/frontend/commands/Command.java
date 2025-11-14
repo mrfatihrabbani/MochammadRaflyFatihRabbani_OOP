@@ -1,5 +1,5 @@
 package com.fatih.frontend.commands;
 
-public interface Commands {
+public interface Command {
     public abstract void execute();
 }

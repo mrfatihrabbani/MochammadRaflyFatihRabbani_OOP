@@ -5,11 +5,11 @@ import java.util.List;
 
 public class ScoreManager implements Subject{
     private List<Observer> observers;
-    int score = 0;
+    int score;
 
-    public ScoreManager(List<Observer> observers, int score){
+    public ScoreManager(){
         this.observers = new ArrayList<>();
-        this.score = score;
+        this.score = 0;
     }
 
 
@@ -27,6 +27,13 @@ public class ScoreManager implements Subject{
     public void notifyObserver(int score) {
         for(Observer observer : observers){
             observer.update(score);
+        }
+    }
+
+    public void setScore(int newScore){
+        if(newScore != score){
+            score = newScore;
+            notifyObserver(score);
         }
     }
 

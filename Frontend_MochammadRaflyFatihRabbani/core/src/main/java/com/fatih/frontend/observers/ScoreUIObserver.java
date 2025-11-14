@@ -23,7 +23,7 @@ public class ScoreUIObserver implements Observer{
     public void render(int score){
         batch.begin();
         batch.draw(font.getRegion(),0, Gdx.graphics.getHeight());
-        font.draw(batch,"Score :", 0,Gdx.graphics.getHeight());
+        font.draw(batch,"Score :" + score, 0,Gdx.graphics.getHeight());
         batch.end();
     }
 

@@ -7,18 +7,20 @@ public class HomingMissilePool extends ObjectPool<HomingMissile>{
 
     @Override
     protected HomingMissile createObject() {
-        return new HomingMissile(new Vector2(),0);
+        return new HomingMissile(new Vector2());
     }
 
     @Override
-    protected void resetObject(HomingMissile object) {
-        object.setPosition(0,0);
-        object.setTarget(null);
+    protected void resetObject(HomingMissile missile) {
+        missile.setActive(false);
+        missile.setPosition(0, 0);
+        missile.setTarget(null);
     }
 
-    public HomingMissile obtain(Vector2 position){
-        super.obtain().initialize(position,0);
-        super.obtain().setActive(true);
-        return super.obtain();
+    public HomingMissile obtain(Vector2 position) {
+        HomingMissile missile = super.obtain();
+        missile.initialize(position, 0);
+        missile.setActive(true);
+        return missile;
     }
 }

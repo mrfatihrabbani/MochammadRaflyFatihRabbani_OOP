@@ -4,7 +4,7 @@ import com.badlogic.gdx.Game;
 import com.fatih.frontend.GameManager;
 import com.fatih.frontend.Player;
 
-public class RestartCommand implements Commands{
+public class RestartCommand implements Command{
     private Player player;
     private GameManager gameManager;
 
