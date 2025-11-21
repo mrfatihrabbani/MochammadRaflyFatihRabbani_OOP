@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.fatih.frontend.states.GameStateManager;
+import com.fatih.frontend.states.PlayingState;
 
 public class Main extends Game {
 

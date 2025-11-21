@@ -16,7 +16,7 @@ public class GameStateManager {
     }
 
     public void pop(){
-        states.pop();
+        states.pop().dispose();
     }
 
     public void set(GameState state){
@@ -25,11 +25,10 @@ public class GameStateManager {
     }
 
     public void update(float delta){
-        update(delta);
-        states.peek();
+        states.peek().update(delta);
     }
 
     public void render(SpriteBatch batch){
-        render(batch);
+        states.peek().render(batch);
     }
 }
