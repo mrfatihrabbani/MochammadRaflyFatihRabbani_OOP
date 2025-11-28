@@ -1,8 +1,8 @@
 package com.fatih.frontend.services;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.net.HttpRequestBuilder;
+
 
 public class BackendService {
     private static final String BASE_URL = "http://localhost:8080/api";
@@ -65,10 +65,12 @@ public class BackendService {
                 }
             }
 
+
             @Override
             public void failed(Throwable t) {
                 callback.onError(t.getMessage());
             }
+
 
             @Override
             public void cancelled() {
@@ -77,4 +79,3 @@ public class BackendService {
         });
     }
 }
-

@@ -14,9 +14,11 @@ public class CoinPool extends ObjectPool<Coin>{
         object.setActive(false);
     }
 
-    public void obtain(float x, float y){
-        super.obtain();
-        //Create a public method obtain(float x, float y): Call super.obtain(), initialize the coin position, then return the coin.
+    public Coin obtain(float x, float y){
+        Coin coin = super.obtain();
+        coin.getPosition().set(x,y);
+        coin.setActive(true);
+        return coin;
     }
 
 }

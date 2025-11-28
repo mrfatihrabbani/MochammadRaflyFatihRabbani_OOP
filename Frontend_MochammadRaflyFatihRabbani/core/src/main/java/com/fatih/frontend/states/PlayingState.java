@@ -1,5 +1,6 @@
 package com.fatih.frontend.states;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
@@ -8,12 +9,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.fatih.frontend.Background;
-import com.fatih.frontend.GameManager;
-import com.fatih.frontend.Ground;
-import com.fatih.frontend.Player;
+import com.fatih.frontend.*;
 import com.fatih.frontend.commands.Command;
 import com.fatih.frontend.commands.JetpackCommand;
+import com.fatih.frontend.factories.CoinFactory;
 import com.fatih.frontend.factories.ObstacleFactory;
 import com.fatih.frontend.observers.ScoreUIObserver;
 import com.fatih.frontend.obstacles.BaseObstacle;
@@ -45,6 +44,10 @@ public class PlayingState implements GameState{
     private int lastLoggedScore = -1;
     private DifficultyStrategy difficultyStrategy;
 
+    private final CoinFactory coinFactory;
+    private float coinSpawnTimer = 0f;
+
+
     public PlayingState(GameStateManager gsm) {
         this.gsm = gsm;
         this.shapeRenderer = new ShapeRenderer();
@@ -62,6 +65,7 @@ public class PlayingState implements GameState{
         setDifficulty(new EasyDifficultyStrategy());
         obstacleSpawnTimer = 0f;
         GameManager.getInstance().startGame();
+        coinFactory = new CoinFactory();
     }
     public void setDifficulty(DifficultyStrategy newStrategy) {
         this.difficultyStrategy = newStrategy;
@@ -76,6 +80,7 @@ public class PlayingState implements GameState{
             jetpackCommand.execute();
         }
         if (player.isDead()) {
+            GameManager.getInstance().endGame();
             gsm.set(new GameOverState(gsm));
             return;
         }
@@ -86,6 +91,9 @@ public class PlayingState implements GameState{
         player.checkBoundaries(ground, screenHeight);
 
         updateObstacles(delta);
+        updateCoins(delta);
+
+        checkCoinCollisions();
         checkCollisions();
 
         int currentScoreMeters = (int) player.getDistanceTraveled();
@@ -119,18 +127,31 @@ public class PlayingState implements GameState{
         }
         spriteBatch.setProjectionMatrix(camera.combined);
         spriteBatch.begin();
+
         background.render(spriteBatch);
+
         spriteBatch.end();
+
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
         player.renderShape(shapeRenderer);
         shapeRenderer.setColor(Color.RED);
         for (BaseObstacle obstacle :
             obstacleFactory.getAllInUseObstacles()) {
             obstacle.render(shapeRenderer);
         }
+
+        for(Coin coin : coinFactory.getActiveCoins()){
+            coin.renderShape(shapeRenderer);
+        }
+
+        int currentScore = GameManager.getInstance().getScore();
+        int currentCoins = GameManager.getInstance().getCoins();
+
+        scoreUIObserver.render(currentScore, currentCoins);
+
         shapeRenderer.end();
-        scoreUIObserver.render(GameManager.getInstance().getScore());
     }
 
     private void updateCamera(float delta) {
@@ -185,12 +206,42 @@ public class PlayingState implements GameState{
         }
     }
 
+    private void checkCoinCollisions(){
+        Rectangle playerCollider = player.getCollider();
+        for(Coin coin : coinFactory.getActiveCoins()){
+            if(coin.isColliding(playerCollider)){
+                coin.setActive(false);
+                GameManager.getInstance().addCoin();
+            }
+        }
+    }
+
+    private void updateCoins(float delta){
+        coinSpawnTimer += delta;
+        if(coinSpawnTimer > 0.5f){
+            float spawnX = camera.position.x + screenWidth;
+            coinFactory.createCoinPattern(spawnX, ground.getTopY());
+            coinSpawnTimer = 0;
+        }
+
+        float cameraLeft = camera.position.x - screenWidth / 2f;
+        for(Coin coin : coinFactory.getActiveCoins()){
+            coin.update(delta);
+            if(coin.isOffScreenCamera(cameraLeft)){
+                coinFactory.releaseCoin(coin);
+            }
+        }
+
+        checkCoinCollisions();
+    }
+
     @Override
     public void dispose() {
         shapeRenderer.dispose();
         if (spriteBatch != null) {
             spriteBatch.dispose();
         }
+        coinFactory.releaseAll();
         obstacleFactory.releaseAllObstacles();
         scoreUIObserver.dispose();
         background.dispose();

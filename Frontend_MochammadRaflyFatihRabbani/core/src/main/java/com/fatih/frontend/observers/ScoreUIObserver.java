@@ -20,10 +20,11 @@ public class ScoreUIObserver implements Observer{
         System.out.println(score);
     }
 
-    public void render(int score){
+    public void render(int score, int coins){
         batch.begin();
         batch.draw(font.getRegion(),0, Gdx.graphics.getHeight());
         font.draw(batch,"Score :" + score, 0,Gdx.graphics.getHeight());
+        font.draw(batch,"Coins :" + coins, 0,Gdx.graphics.getHeight() - 30);
         batch.end();
     }
 

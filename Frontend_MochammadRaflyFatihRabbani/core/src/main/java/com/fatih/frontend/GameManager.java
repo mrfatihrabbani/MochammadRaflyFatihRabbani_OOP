@@ -2,10 +2,13 @@ package com.fatih.frontend;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import com.fatih.frontend.observers.Observer;
 import com.fatih.frontend.observers.ScoreManager;
 import com.fatih.frontend.observers.Subject;
 import com.fatih.frontend.services.BackendService;
+
+import static com.badlogic.gdx.utils.JsonWriter.OutputType.json;
 
 public class GameManager implements Subject {
     private static GameManager instance;
@@ -31,11 +34,11 @@ public class GameManager implements Subject {
             @Override
             public void onSuccess(String response) {
                 try {
-                    new JsonReader().parse(response);
-                    currentPlayerId = "playerId";
-
-                } catch (Error error){
-                    Gdx.app.error("error", response);
+                    JsonValue json = new JsonReader().parse(response);
+                    currentPlayerId = json.getString("playerId");
+                    Gdx.app.log("savedId", "Player ID has been successfully saved with ID : " + currentPlayerId);
+                } catch (Exception error){
+                    Gdx.app.error("error", "Player ID failed to be saved : " + response);
                 }
             }
 
@@ -66,20 +69,40 @@ public class GameManager implements Subject {
             return;
         }
 
-        float finalScore = scoreManager.getScore() + coinsCollected * 10;
+        int finalScore = scoreManager.getScore() + coinsCollected * 10;
         score = scoreManager.getScore();
+        int distance = scoreManager.getScore();
 
-        backendService.submitScore(currentPlayerId,finalScore,coincount, distance);
+        backendService.submitScore(currentPlayerId, finalScore, coinsCollected, distance, new BackendService.RequestCallback() {
+            @Override
+            public void onSuccess(String response) {
+                Gdx.app.log("submit","Score successfully submitted : "  + response);
+            }
+
+            @Override
+            public void onError(String error) {
+                Gdx.app.log("submit", "Score failed to submit : " + error);
+            }
+        });
     }
 
-    public void setScore(int newScore) {
+    public void addCoin(){
+        coinsCollected++;
+        Gdx.app.log("addCoin","COIN COLLECTED! Total: " + coinsCollected);
+    }
+
+    public void setScore(int distance) {
         if (gameActive) {
-            scoreManager.setScore(newScore);
+            scoreManager.setScore(distance);
         }
     }
 
     // Getters
     public int getScore() { return scoreManager.getScore(); }
+
+    public int getCoins(){
+        return coinsCollected;
+    }
 
     @Override
     public void addObserver(Observer observer) {

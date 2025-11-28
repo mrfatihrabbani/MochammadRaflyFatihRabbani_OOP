@@ -15,12 +15,14 @@ public class Coin {
 
     public Coin(Vector2 startPosition){
         this.position = startPosition;
-        collider = new Rectangle();
+        this.collider = new Rectangle(position.x - radius, position.y - radius, radius, radius);
+        this.bobSpeed = 3f;
+        this.bobOffset = 0f;
     }
 
     public void update(float delta){
-        bobOffset = bobSpeed * delta;
-        collider.setPosition(0, bobOffset);
+        bobOffset += bobSpeed * delta;
+        collider.setPosition(position.x - radius, position.y - radius);
     }
 
     public void renderShape(ShapeRenderer shapeRenderer){
@@ -40,4 +42,14 @@ public class Coin {
     public void setActive(boolean b) {
         this.active = b;
     }
+
+    public boolean isOffScreenCamera(float cameraLeftEdge) {
+        return position.x + radius < cameraLeftEdge;
+    }
+
+
+    public Vector2 getPosition(){
+        return position;
+    }
+
 }
