@@ -7,20 +7,10 @@ import java.util.List;
 import java.util.Random;
 
 public class CoinFactory {
-    private CoinPool coinPool;
-    private Random random;
+    public final CoinPool coinPool;
 
     public CoinFactory(){
         this.coinPool = new CoinPool();
-        this.random = new Random();
-    }
-    public void createCoinPattern(float spawnX, float groundTopY){
-        if(random.nextFloat(1) < 0.3f){
-            for(int i = 0; i<= 3; i++){
-                float coinSpawnX = spawnX + (i * 40);
-                coinPool.obtain(coinSpawnX, groundTopY);
-            }
-        }
     }
 
     public List<Coin> getActiveCoins(){
